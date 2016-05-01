@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Basic Rects Snap to Grid</title>
+</head>
+<body>
+
+<svg width="500" height="500" viewBox="0 0 200 100" id="canvas">
+
+</svg>
+
+<button id="snap">Snap to Grid</button>
+<button id="add">Add Random Rect</button>
+
+<script>
+(function () {
+
+    var gridSize = [10, 10];
+
+    var canvas = document.getElementById('canvas');
+    var snapToGrid = document.getElementById('snap');
+
+    var comparator = function (rectA, rectB) {
+        if (rectA.x < rectB.x) {
+            return -1;
+        } else if (rectA.x > rectB.x) {
+            return 1;
+        } else if (rectA.y > rectB.y) {
+            return 1;
+        } else {
+            return -1;
+        }
+    };
+
+    var findIntersection = function(rectangle1, rectangle2, field_start, field_end) {
+        var highest_start_point = Math.max(rectangle1[field_start], rectangle2[field_start]);
+        var lowest_end_point = Math.min(rectangle1[field_start] + rectangle1[field_end],
+                rectangle2[field_start] + rectangle2[field_end]);
+
+        var rect = undefined;
+
+        if (highest_start_point >= lowest_end_point) {
+
+        } else {
+            rect = {};
+            rect[field_start] = highest_start_point;
+            rect[field_end] = lowest_end_point;
+        }
+
+        return rect
+    };
+
+    var getRectangleIntersection = function (rectObject, rects, indexRange) {
+        if (indexRange === -1) {
+            return indexRange;
+        }
+
+        var overlappedRect = undefined;
+
+        for (var i = 0; i <= indexRange; i++) {
+            var x_start = findIntersection(rectObject, rects[i], 'x', 'width');
+            var y_start = findIntersection(rectObject, rects[i], 'y', 'height');
+
+            if (x_start && y_start) {
+                overlappedRect = rects[i];
+            }
+        }
+
+        if (overlappedRect) {
+            return overlappedRect;
+        }
+
+        return -1;
+    };
+
+    var snapGrid = function (rectObject) {
+        var modX = rectObject.x % gridSize[0];
+        var modY = rectObject.y % gridSize[1];
+
+        var x = rectObject.x - modX, y = rectObject.y - modY;
+        if (modX >=5 ) {
+            x += gridSize[0];
+        }
+
+        if (modY >= 5) {
+            y += gridSize[1];
+        }
+
+        rectObject.x = x;
+        rectObject.y = y;
+    };
+
+    snapToGrid.addEventListener('click', function () {
+        var respositioned = false;
+        rects.sort(comparator);
+
+        rects.forEach(function (rectObject, index) {
+            snapGrid(rectObject);
+
+            var intersection = getRectangleIntersection(rectObject, rects, index - 1);
+            if (intersection !== -1) {
+                /*
+                 Object {x: 80, y: 50, width: 43.51421870983223, height: 17.03527143192084, id: 1}
+                 Object {x: 90, y: 50, width: 28.886482375002032, height: 20.869315411889072, id: 5}
+                 */
+
+                var xIntersection = findIntersection(rectObject, intersection, 'x', 'width');
+                var yIntersection = findIntersection(rectObject, intersection, 'y', 'height');
+
+                if (xIntersection) {
+                    rectObject.x = intersection.x + intersection.width + gridSize[0];
+                }
+
+                if (yIntersection) {
+                    rectObject.y = intersection.y + intersection.height + gridSize[1];
+                }
+
+                snapGrid(rectObject);
+            }
+        });
+
+        canvas.innerHTML = "";
+        rects.forEach(drawRect);
+    });
+
+    var rects = [];
+
+    var drawRect = function (rectObject) {
+        canvas.innerHTML += '<rect x="' + rectObject.x + '" y="' + rectObject.y + '" width="' + rectObject.width + '" height="' + rectObject.height + '" id="' + rectObject.id + '"/>'
+    };
+
+    var addRect = document.getElementById('add');
+    addRect.addEventListener('click', function () {
+        var x = Math.random() * 200;
+        var y = Math.random() * 100;
+
+        var width = Math.random() * (50 - 10) + 10;
+        var height = Math.random() * (30 - 10) + 10;
+        var id = rects.length + 1;
+
+        var rectObj = {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            id: id
+        };
+        rects.push(rectObj);
+        drawRect(rectObj)
+    });
+
+}());
+</script>
+
+</body>
+</html>
