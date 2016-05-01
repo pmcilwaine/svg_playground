@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Anchored Line</title>
+<style>
+svg {
+    border: 1px solid #000;
+}
+line, path {
+    stroke: #000;
+    stroke-width: 1;
+}
+</style>
+</head>
+<body>
+
+<svg width="500" height="500" viewBox="-50 0 200 100" id="canvas">
+    <rect id="a" width="20" height="5" x="15" y="20"></rect>
+    <rect id="b" width="20" height="5" x="60" y="60"></rect>
+</svg>
+
+<script>
+(function () {
+
+    function findElementMiddleBottom(element) {
+        var y = element.y.baseVal.value + element.height.baseVal.value;
+        var x = element.x.baseVal.value + (element.width.baseVal.value / 2);
+
+        return [x, y];
+    }
+
+    function findElementMiddleTop(element) {
+        var y = element.y.baseVal.value;
+        var x = element.x.baseVal.value + (element.width.baseVal.value / 2);
+        return [x, y];
+    }
+
+    // draw the shortest line
+    function drawStraightLine(canvas, componentA, componentB) {
+        var top, bottom;
+        if (componentA.y.baseVal.value < componentB.y.baseVal.value) {
+            top = componentA;
+            bottom = componentB;
+        } else {
+            top = componentB;
+            bottom = componentA;
+        }
+
+        var topCoords = findElementMiddleBottom(top), bottomCoords = findElementMiddleTop(bottom);
+
+        var line = '<line x1="' + topCoords[0] + '" y1="' + topCoords[1] + '" x2="' + bottomCoords[0] + '" y2="' + bottomCoords[1] + '"/>';
+        canvas.innerHTML += line;
+    }
+
+    // this will draw 3 lines
+    function drawPathLine(canvas, componentA, componentB) {
+        var top, bottom;
+        if (componentA.y.baseVal.value < componentB.y.baseVal.value) {
+            top = componentA;
+            bottom = componentB;
+        } else {
+            top = componentB;
+            bottom = componentA;
+        }
+
+        var topCoords = findElementMiddleBottom(top), bottomCoords = findElementMiddleTop(bottom);
+        var middleY = (topCoords[1] + bottomCoords[1]) / 2;
+        var stroke = 1 / 2;
+
+        var path = '<path d="M' + topCoords[0] + ',' + topCoords[1] + 'V' + middleY + 'z M' + (topCoords[0] - stroke) + ',' + middleY + 'H' + (bottomCoords[0] + stroke) + 'z M' + bottomCoords[0] + ',' +  middleY + 'V' + bottomCoords[1] + '"/>';
+
+        canvas.innerHTML += path;
+    }
+
+    drawPathLine(
+        document.getElementById('canvas'),
+        document.getElementById('a'),
+        document.getElementById('b')
+    );
+
+}());
+</script>
+
+</body>
+</html>
